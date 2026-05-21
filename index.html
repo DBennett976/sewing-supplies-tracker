@@ -8,47 +8,116 @@
 </head>
 <body>
   <main class="app">
-    <header>
-      <h1>Sewing Supply Tracker</h1>
-      <p>Keep track of thread, needles, fabric, tools, and more.</p>
+    <header class="hero">
+      <h1>🧵 Sewing Supply Tracker</h1>
+      <p>Track thread, needles, fabric, tools, parts, and low-stock items.</p>
     </header>
 
-    <section class="card">
-      <h2>Add Supply</h2>
+    <section class="card formCard">
+      <h2 id="formTitle">Add Supply</h2>
 
       <form id="supplyForm">
-        <input id="name" placeholder="Item name" required />
+        <input type="hidden" id="editId" />
 
-        <select id="category" required>
-          <option value="">Category</option>
-          <option>Thread</option>
-          <option>Needles</option>
-          <option>Fabric</option>
-          <option>Bobbins</option>
-          <option>Presser Feet</option>
-          <option>Tools</option>
-          <option>Oil / Maintenance</option>
-          <option>Other</option>
-        </select>
+        <label>
+          Item Name
+          <input id="name" required placeholder="Black polyester thread" />
+        </label>
 
-        <input id="details" placeholder="Color, size, type, brand..." />
-        <input id="quantity" type="number" min="0" placeholder="Quantity" required />
-        <input id="lowStock" type="number" min="0" placeholder="Low stock warning" />
-        <input id="location" placeholder="Storage location" />
-        <textarea id="notes" placeholder="Notes"></textarea>
+        <label>
+          Category
+          <select id="category" required>
+            <option value="">Choose category</option>
+            <option>Thread</option>
+            <option>Needles</option>
+            <option>Fabric</option>
+            <option>Bobbins</option>
+            <option>Presser Feet</option>
+            <option>Tools</option>
+            <option>Parts</option>
+            <option>Oil / Maintenance</option>
+            <option>Other</option>
+          </select>
+        </label>
 
-        <button type="submit">Add Supply</button>
+        <label>
+          Details
+          <input id="details" placeholder="Color, size, brand, type..." />
+        </label>
+
+        <label>
+          Quantity
+          <input id="quantity" type="number" min="0" required placeholder="3" />
+        </label>
+
+        <label>
+          Low Stock Warning
+          <input id="lowStock" type="number" min="0" placeholder="1" />
+        </label>
+
+        <label>
+          Location
+          <input id="location" placeholder="Top drawer, sewing box..." />
+        </label>
+
+        <label class="full">
+          Photo
+          <input id="photo" type="file" accept="image/*" />
+        </label>
+
+        <label class="full">
+          Notes
+          <textarea id="notes" placeholder="Any extra notes..."></textarea>
+        </label>
+
+        <div class="formButtons full">
+          <button type="submit" id="submitBtn">Add Supply</button>
+          <button type="button" id="cancelEditBtn" class="secondary hidden">Cancel Edit</button>
+        </div>
       </form>
     </section>
 
-    <section class="card">
-      <div class="inventoryHeader">
-        <h2>Inventory</h2>
-        <input id="search" placeholder="Search supplies..." />
-      </div>
+    <section class="card controls">
+      <input id="search" placeholder="Search supplies..." />
 
-      <div id="inventoryList"></div>
+      <select id="categoryFilter">
+        <option value="All">All categories</option>
+        <option>Thread</option>
+        <option>Needles</option>
+        <option>Fabric</option>
+        <option>Bobbins</option>
+        <option>Presser Feet</option>
+        <option>Tools</option>
+        <option>Parts</option>
+        <option>Oil / Maintenance</option>
+        <option>Other</option>
+      </select>
+
+      <select id="stockFilter">
+        <option value="All">All stock</option>
+        <option value="Low">Low stock only</option>
+      </select>
+
+      <select id="sortBy">
+        <option value="newest">Newest first</option>
+        <option value="name">Name A-Z</option>
+        <option value="category">Category A-Z</option>
+        <option value="quantityLow">Quantity low-high</option>
+        <option value="quantityHigh">Quantity high-low</option>
+      </select>
+
+      <button id="exportCsvBtn" class="secondary">Export CSV</button>
+      <button id="exportJsonBtn" class="secondary">Backup JSON</button>
     </section>
+
+    <section class="inventoryHeader">
+      <h2>Inventory</h2>
+      <p id="itemCount">0 items</p>
+    </section>
+
+    <section id="inventoryList" class="inventoryGrid"></section>
+
+    <button id="scrollToFormBtn" class="floatingBtn">＋</button>
   </main>
 
   <script src="script.js"></script>
