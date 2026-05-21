@@ -6,35 +6,48 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #f7f1ea;
-  color: #222;
+  color: #1f1f1f;
 }
 
 .app {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 18px;
+  padding-bottom: 90px;
 }
 
-header {
+.hero {
   text-align: center;
-  margin-bottom: 24px;
+  padding: 18px 6px;
 }
 
-h1 {
-  margin-bottom: 8px;
+.hero h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.hero p {
+  color: #5f5f5f;
 }
 
 .card {
   background: white;
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
 }
 
 form {
   display: grid;
-  gap: 12px;
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 input,
@@ -42,41 +55,84 @@ select,
 textarea,
 button {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 13px;
+  border-radius: 14px;
   border: 1px solid #ccc;
   font-size: 16px;
 }
 
 textarea {
-  min-height: 80px;
+  min-height: 90px;
   resize: vertical;
 }
 
 button {
+  border: none;
   background: #222;
   color: white;
-  border: none;
-  cursor: pointer;
   font-weight: bold;
+  cursor: pointer;
 }
 
-button:hover {
-  opacity: 0.9;
+button:active {
+  transform: scale(0.98);
+}
+
+.secondary {
+  background: #eee;
+  color: #222;
+}
+
+.hidden {
+  display: none;
+}
+
+.formButtons {
+  display: grid;
+  gap: 10px;
+}
+
+.controls {
+  display: grid;
+  gap: 12px;
 }
 
 .inventoryHeader {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.supplyItem {
-  border: 1px solid #ddd;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 12px;
+.inventoryHeader h2 {
+  margin: 0 0 12px;
+}
+
+.inventoryHeader p {
+  margin: 0 0 12px;
+  color: #666;
+}
+
+.inventoryGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.supplyCard {
   background: #fffaf5;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.supplyPhoto {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: #eee;
+}
+
+.supplyBody {
+  padding: 15px;
 }
 
 .supplyTop {
@@ -89,35 +145,75 @@ button:hover {
   margin: 0;
 }
 
+.qty {
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.badges {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .badge {
-  display: inline-block;
   background: #eee;
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 5px 10px;
   font-size: 13px;
-  margin-top: 6px;
 }
 
 .low {
   background: #ffe0e0;
-  color: #900;
+  color: #8b0000;
+}
+
+.details {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+  color: #333;
+}
+
+.details p {
+  margin: 0;
 }
 
 .actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .actions button {
-  padding: 9px;
+  padding: 10px;
   font-size: 14px;
+}
+
+.deleteBtn {
+  background: #8b0000;
 }
 
 .empty {
   text-align: center;
   color: #777;
-  padding: 20px;
+  padding: 26px;
+  background: white;
+  border-radius: 18px;
+}
+
+.floatingBtn {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  font-size: 28px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
 }
 
 @media (min-width: 700px) {
@@ -125,13 +221,21 @@ button:hover {
     grid-template-columns: 1fr 1fr;
   }
 
-  textarea,
-  button {
+  .full {
     grid-column: span 2;
   }
 
-  .inventoryHeader {
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
+  .controls {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .inventoryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1000px) {
+  .inventoryGrid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
