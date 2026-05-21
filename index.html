@@ -10,8 +10,22 @@
   <main class="app">
     <header class="hero">
       <h1>🧵 Sewing Supply Tracker</h1>
-      <p>Track thread, needles, fabric, tools, parts, and low-stock items.</p>
+      <p>Inventory, low-stock alerts, collections, shopping list, and labels.</p>
+      <button id="darkModeBtn" class="secondary smallBtn">🌙 Dark Mode</button>
     </header>
+
+    <section class="card dashboard">
+      <div><strong id="totalItems">0</strong><span>Total Items</span></div>
+      <div><strong id="lowStockCount">0</strong><span>Low Stock</span></div>
+      <div><strong id="categoryCount">0</strong><span>Categories</span></div>
+      <div><strong id="shoppingCount">0</strong><span>Shopping List</span></div>
+    </section>
+
+    <section class="card controls">
+      <select id="collectionSelect"></select>
+      <button id="addCollectionBtn" class="secondary">Add Collection</button>
+      <button id="deleteCollectionBtn" class="secondary dangerText">Delete Collection</button>
+    </section>
 
     <section class="card formCard">
       <h2 id="formTitle">Add Supply</h2>
@@ -19,10 +33,7 @@
       <form id="supplyForm">
         <input type="hidden" id="editId" />
 
-        <label>
-          Item Name
-          <input id="name" required placeholder="Black polyester thread" />
-        </label>
+        <label>Item Name <input id="name" required /></label>
 
         <label>
           Category
@@ -40,35 +51,17 @@
           </select>
         </label>
 
-        <label>
-          Details
-          <input id="details" placeholder="Color, size, brand, type..." />
-        </label>
-
-        <label>
-          Quantity
-          <input id="quantity" type="number" min="0" required placeholder="3" />
-        </label>
-
-        <label>
-          Low Stock Warning
-          <input id="lowStock" type="number" min="0" placeholder="1" />
-        </label>
-
-        <label>
-          Location
-          <input id="location" placeholder="Top drawer, sewing box..." />
-        </label>
+        <label>Details <input id="details" placeholder="Color, size, brand..." /></label>
+        <label>Quantity <input id="quantity" type="number" min="0" required /></label>
+        <label>Low Stock Warning <input id="lowStock" type="number" min="0" /></label>
+        <label>Location <input id="location" placeholder="Drawer, bin, shelf..." /></label>
 
         <label class="full">
-          Photo
-          <input id="photo" type="file" accept="image/*" />
+          Photo / Camera
+          <input id="photo" type="file" accept="image/*" capture="environment" />
         </label>
 
-        <label class="full">
-          Notes
-          <textarea id="notes" placeholder="Any extra notes..."></textarea>
-        </label>
+        <label class="full">Notes <textarea id="notes"></textarea></label>
 
         <div class="formButtons full">
           <button type="submit" id="submitBtn">Add Supply</button>
@@ -108,6 +101,13 @@
 
       <button id="exportCsvBtn" class="secondary">Export CSV</button>
       <button id="exportJsonBtn" class="secondary">Backup JSON</button>
+
+      <label class="fileRestore">
+        Restore JSON
+        <input id="restoreJsonInput" type="file" accept="application/json" />
+      </label>
+
+      <button id="printLabelsBtn" class="secondary">Print Labels</button>
     </section>
 
     <section class="inventoryHeader">
@@ -116,6 +116,16 @@
     </section>
 
     <section id="inventoryList" class="inventoryGrid"></section>
+
+    <section class="card shoppingCard">
+      <h2>Shopping List</h2>
+      <div class="shoppingInput">
+        <input id="manualShoppingItem" placeholder="Add item to buy..." />
+        <button id="addShoppingBtn">Add</button>
+      </div>
+      <button id="addLowStockBtn" class="secondary">Add Low Stock Items</button>
+      <div id="shoppingList"></div>
+    </section>
 
     <button id="scrollToFormBtn" class="floatingBtn">＋</button>
   </main>
