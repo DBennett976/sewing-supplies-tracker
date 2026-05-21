@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sewing Supply Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Sewing Supply Tracker</h1>
+      <p>Keep track of thread, needles, fabric, tools, and more.</p>
+    </header>
+
+    <section class="card">
+      <h2>Add Supply</h2>
+
+      <form id="supplyForm">
+        <input id="name" placeholder="Item name" required />
+
+        <select id="category" required>
+          <option value="">Category</option>
+          <option>Thread</option>
+          <option>Needles</option>
+          <option>Fabric</option>
+          <option>Bobbins</option>
+          <option>Presser Feet</option>
+          <option>Tools</option>
+          <option>Oil / Maintenance</option>
+          <option>Other</option>
+        </select>
+
+        <input id="details" placeholder="Color, size, type, brand..." />
+        <input id="quantity" type="number" min="0" placeholder="Quantity" required />
+        <input id="lowStock" type="number" min="0" placeholder="Low stock warning" />
+        <input id="location" placeholder="Storage location" />
+        <textarea id="notes" placeholder="Notes"></textarea>
+
+        <button type="submit">Add Supply</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="inventoryHeader">
+        <h2>Inventory</h2>
+        <input id="search" placeholder="Search supplies..." />
+      </div>
+
+      <div id="inventoryList"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
