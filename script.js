@@ -1,28 +1,67 @@
-const form = document.getElementById("supplyForm");
-const formTitle = document.getElementById("formTitle");
-const submitBtn = document.getElementById("submitBtn");
-const cancelEditBtn = document.getElementById("cancelEditBtn");
+const storageKey = "sewingSupplyTrackerData";
 
+let appData = loadData();
+
+const form = document.getElementById("supplyForm");
 const inventoryList = document.getElementById("inventoryList");
-const itemCount = document.getElementById("itemCount");
+const shoppingList = document.getElementById("shoppingList");
+
+const collectionSelect = document.getElementById("collectionSelect");
+const addCollectionBtn = document.getElementById("addCollectionBtn");
+const deleteCollectionBtn = document.getElementById("deleteCollectionBtn");
 
 const searchInput = document.getElementById("search");
 const categoryFilter = document.getElementById("categoryFilter");
 const stockFilter = document.getElementById("stockFilter");
 const sortBy = document.getElementById("sortBy");
 
-const exportCsvBtn = document.getElementById("exportCsvBtn");
-const exportJsonBtn = document.getElementById("exportJsonBtn");
+const formTitle = document.getElementById("formTitle");
+const submitBtn = document.getElementById("submitBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+const darkModeBtn = document.getElementById("darkModeBtn");
 const scrollToFormBtn = document.getElementById("scrollToFormBtn");
 
-let supplies = JSON.parse(localStorage.getItem("sewingSupplies")) || [];
+function loadData() {
+  const oldSupplies = JSON.parse(localStorage.getItem("sewingSupplies") || "null");
+  const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
 
-function saveSupplies() {
-  localStorage.setItem("sewingSupplies", JSON.stringify(supplies));
+  if (saved) return saved;
+
+  return {
+    currentCollection: "Main Supplies",
+    darkMode: false,
+    collections: {
+      "Main Supplies": oldSupplies || []
+    },
+    shoppingList: []
+  };
+}
+
+function saveData() {
+  localStorage.setItem(storageKey, JSON.stringify(appData));
+}
+
+function currentSupplies() {
+  return appData.collections[appData.currentCollection] || [];
+}
+
+function setCurrentSupplies(items) {
+  appData.collections[appData.currentCollection] = items;
+  saveData();
+}
+
+function escapeHTML(text) {
+  return String(text || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function getCategoryIcon(category) {
-  const icons = {
+  return {
     Thread: "🧵",
     Needles: "🪡",
     Fabric: "🧶",
@@ -32,19 +71,39 @@ function getCategoryIcon(category) {
     Parts: "⚙️",
     "Oil / Maintenance": "🛢️",
     Other: "📦"
-  };
-
-  return icons[category] || "📦";
+  }[category] || "📦";
 }
 
 function isLowStock(item) {
   return item.lowStock !== "" && Number(item.quantity) <= Number(item.lowStock);
 }
 
+function readPhotoFile(file) {
+  return new Promise((resolve) => {
+    if (!file) return resolve("");
+
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderCollections() {
+  collectionSelect.innerHTML = "";
+
+  Object.keys(appData.collections).forEach((name) => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    if (name === appData.currentCollection) option.selected = true;
+    collectionSelect.appendChild(option);
+  });
+}
+
 function getFilteredSupplies() {
   const searchTerm = searchInput.value.toLowerCase();
 
-  let filtered = supplies.filter((item) => {
+  let filtered = currentSupplies().filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm) ||
       item.category.toLowerCase().includes(searchTerm) ||
@@ -72,47 +131,60 @@ function getFilteredSupplies() {
   return filtered;
 }
 
+function renderDashboard() {
+  const supplies = currentSupplies();
+  const categories = new Set(supplies.map((item) => item.category));
+
+  document.getElementById("totalItems").textContent = supplies.length;
+  document.getElementById("lowStockCount").textContent = supplies.filter(isLowStock).length;
+  document.getElementById("categoryCount").textContent = categories.size;
+  document.getElementById("shoppingCount").textContent = appData.shoppingList.length;
+}
+
 function renderSupplies() {
-  const filteredSupplies = getFilteredSupplies();
-
+  const supplies = getFilteredSupplies();
   inventoryList.innerHTML = "";
-  itemCount.textContent = `${filteredSupplies.length} item${filteredSupplies.length === 1 ? "" : "s"}`;
 
-  if (filteredSupplies.length === 0) {
+  document.getElementById("itemCount").textContent =
+    `${supplies.length} item${supplies.length === 1 ? "" : "s"}`;
+
+  if (supplies.length === 0) {
     inventoryList.innerHTML = `<p class="empty">No supplies found.</p>`;
+    renderDashboard();
     return;
   }
 
-  filteredSupplies.forEach((item) => {
+  supplies.forEach((item) => {
     const card = document.createElement("article");
     card.className = "supplyCard";
 
     card.innerHTML = `
-      ${item.photo ? `<img src="${item.photo}" class="supplyPhoto" alt="${item.name}">` : ""}
+      ${item.photo ? `<img src="${item.photo}" class="supplyPhoto" alt="${escapeHTML(item.name)}">` : ""}
 
       <div class="supplyBody">
         <div class="supplyTop">
           <div>
-            <h3>${getCategoryIcon(item.category)} ${item.name}</h3>
+            <h3>${getCategoryIcon(item.category)} ${escapeHTML(item.name)}</h3>
             <div class="badges">
-              <span class="badge">${item.category}</span>
+              <span class="badge">${escapeHTML(item.category)}</span>
               ${isLowStock(item) ? `<span class="badge low">Low Stock</span>` : ""}
             </div>
           </div>
-          <div class="qty">Qty: ${item.quantity}</div>
+          <div class="qty">Qty: ${escapeHTML(item.quantity)}</div>
         </div>
 
         <div class="details">
-          <p><strong>Details:</strong> ${item.details || "—"}</p>
-          <p><strong>Location:</strong> ${item.location || "—"}</p>
-          <p><strong>Low warning:</strong> ${item.lowStock || "—"}</p>
-          <p><strong>Notes:</strong> ${item.notes || "—"}</p>
+          <p><strong>Details:</strong> ${escapeHTML(item.details) || "—"}</p>
+          <p><strong>Location:</strong> ${escapeHTML(item.location) || "—"}</p>
+          <p><strong>Low warning:</strong> ${escapeHTML(item.lowStock) || "—"}</p>
+          <p><strong>Notes:</strong> ${escapeHTML(item.notes) || "—"}</p>
         </div>
 
         <div class="actions">
           <button onclick="changeQuantity(${item.id}, -1)">-1</button>
           <button onclick="changeQuantity(${item.id}, 1)">+1</button>
           <button onclick="editSupply(${item.id})">Edit</button>
+          <button onclick="addItemToShopping('${escapeHTML(item.name)}')">Buy</button>
           <button class="deleteBtn" onclick="deleteSupply(${item.id})">Delete</button>
         </div>
       </div>
@@ -120,23 +192,30 @@ function renderSupplies() {
 
     inventoryList.appendChild(card);
   });
+
+  renderDashboard();
 }
 
-function readPhotoFile(file) {
-  return new Promise((resolve) => {
-    if (!file) {
-      resolve("");
-      return;
-    }
+function renderShoppingList() {
+  shoppingList.innerHTML = "";
 
-    const reader = new FileReader();
+  if (appData.shoppingList.length === 0) {
+    shoppingList.innerHTML = `<p class="empty">Shopping list is empty.</p>`;
+    renderDashboard();
+    return;
+  }
 
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-
-    reader.readAsDataURL(file);
+  appData.shoppingList.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "shoppingItem";
+    row.innerHTML = `
+      <span>${escapeHTML(item)}</span>
+      <button onclick="removeShoppingItem(${index})">Remove</button>
+    `;
+    shoppingList.appendChild(row);
   });
+
+  renderDashboard();
 }
 
 form.addEventListener("submit", async (event) => {
@@ -156,18 +235,14 @@ form.addEventListener("submit", async (event) => {
     notes: document.getElementById("notes").value.trim()
   };
 
-  if (editId) {
-    supplies = supplies.map((item) => {
-      if (String(item.id) === editId) {
-        return {
-          ...item,
-          ...supplyData,
-          photo: newPhoto || item.photo || ""
-        };
-      }
+  let supplies = currentSupplies();
 
-      return item;
-    });
+  if (editId) {
+    supplies = supplies.map((item) =>
+      String(item.id) === editId
+        ? { ...item, ...supplyData, photo: newPhoto || item.photo || "" }
+        : item
+    );
   } else {
     supplies.push({
       id: Date.now(),
@@ -176,29 +251,24 @@ form.addEventListener("submit", async (event) => {
     });
   }
 
-  saveSupplies();
+  setCurrentSupplies(supplies);
   resetForm();
-  renderSupplies();
+  renderAll();
 });
 
 function changeQuantity(id, amount) {
-  supplies = supplies.map((item) => {
-    if (item.id === id) {
-      return {
-        ...item,
-        quantity: Math.max(0, Number(item.quantity) + amount)
-      };
-    }
+  const supplies = currentSupplies().map((item) =>
+    item.id === id
+      ? { ...item, quantity: Math.max(0, Number(item.quantity) + amount) }
+      : item
+  );
 
-    return item;
-  });
-
-  saveSupplies();
-  renderSupplies();
+  setCurrentSupplies(supplies);
+  renderAll();
 }
 
 function editSupply(id) {
-  const item = supplies.find((supply) => supply.id === id);
+  const item = currentSupplies().find((supply) => supply.id === id);
   if (!item) return;
 
   document.getElementById("editId").value = item.id;
@@ -214,23 +284,17 @@ function editSupply(id) {
   submitBtn.textContent = "Save Changes";
   cancelEditBtn.classList.remove("hidden");
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function deleteSupply(id) {
-  const item = supplies.find((supply) => supply.id === id);
+  const item = currentSupplies().find((supply) => supply.id === id);
   if (!item) return;
 
-  const confirmed = confirm(`Delete "${item.name}"?`);
+  if (!confirm(`Delete "${item.name}"?`)) return;
 
-  if (!confirmed) return;
-
-  supplies = supplies.filter((item) => item.id !== id);
-  saveSupplies();
-  renderSupplies();
+  setCurrentSupplies(currentSupplies().filter((item) => item.id !== id));
+  renderAll();
 }
 
 function resetForm() {
@@ -241,11 +305,30 @@ function resetForm() {
   cancelEditBtn.classList.add("hidden");
 }
 
-function exportCSV() {
-  if (supplies.length === 0) {
-    alert("No supplies to export.");
-    return;
+function addItemToShopping(name) {
+  if (!appData.shoppingList.includes(name)) {
+    appData.shoppingList.push(name);
+    saveData();
+    renderShoppingList();
   }
+}
+
+function removeShoppingItem(index) {
+  appData.shoppingList.splice(index, 1);
+  saveData();
+  renderShoppingList();
+}
+
+function addLowStockItems() {
+  currentSupplies()
+    .filter(isLowStock)
+    .forEach((item) => addItemToShopping(item.name));
+}
+
+function exportCSV() {
+  const supplies = currentSupplies();
+
+  if (supplies.length === 0) return alert("No supplies to export.");
 
   const headers = ["Name", "Category", "Details", "Quantity", "Low Stock", "Location", "Notes"];
 
@@ -259,32 +342,54 @@ function exportCSV() {
     item.notes
   ]);
 
-  const csvContent = [headers, ...rows]
-    .map((row) =>
-      row
-        .map((value) => `"${String(value).replaceAll('"', '""')}"`)
-        .join(",")
-    )
+  const csv = [headers, ...rows]
+    .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
     .join("\n");
 
-  downloadFile(csvContent, "sewing-supplies.csv", "text/csv");
+  downloadFile(csv, `${appData.currentCollection}-supplies.csv`, "text/csv");
 }
 
 function exportJSON() {
-  if (supplies.length === 0) {
-    alert("No supplies to backup.");
-    return;
-  }
+  downloadFile(
+    JSON.stringify(appData, null, 2),
+    "sewing-supply-tracker-backup.json",
+    "application/json"
+  );
+}
 
-  const jsonContent = JSON.stringify(supplies, null, 2);
-  downloadFile(jsonContent, "sewing-supplies-backup.json", "application/json");
+function restoreJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      const restored = JSON.parse(reader.result);
+
+      if (!restored.collections) {
+        alert("That backup file does not look right.");
+        return;
+      }
+
+      appData = restored;
+      saveData();
+      applyDarkMode();
+      renderAll();
+      alert("Backup restored.");
+    } catch {
+      alert("Could not restore that file.");
+    }
+  };
+
+  reader.readAsText(file);
 }
 
 function downloadFile(content, filename, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
-
   const link = document.createElement("a");
+
   link.href = url;
   link.download = filename;
   link.click();
@@ -292,20 +397,150 @@ function downloadFile(content, filename, type) {
   URL.revokeObjectURL(url);
 }
 
+function printLabels() {
+  const supplies = currentSupplies();
+
+  if (supplies.length === 0) return alert("No labels to print.");
+
+  const labelWindow = window.open("", "_blank");
+
+  const labels = supplies.map((item) => {
+    const data = encodeURIComponent(
+      `${item.name} | ${item.category} | Qty: ${item.quantity} | Location: ${item.location}`
+    );
+
+    return `
+      <div class="label">
+        <h3>${escapeHTML(item.name)}</h3>
+        <p>${escapeHTML(item.category)}</p>
+        <p>Qty: ${escapeHTML(item.quantity)}</p>
+        <p>${escapeHTML(item.location || "")}</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${data}">
+      </div>
+    `;
+  }).join("");
+
+  labelWindow.document.write(`
+    <html>
+      <head>
+        <title>Supply Labels</title>
+        <style>
+          body { font-family: Arial, sans-serif; }
+          .sheet {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 12px;
+          }
+          .label {
+            border: 1px solid #222;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            page-break-inside: avoid;
+          }
+          .label h3 { margin: 0 0 6px; }
+          .label p { margin: 3px 0; }
+          img { margin-top: 8px; }
+        </style>
+      </head>
+      <body>
+        <div class="sheet">${labels}</div>
+        <script>window.print();<\/script>
+      </body>
+    </html>
+  `);
+
+  labelWindow.document.close();
+}
+
+function addCollection() {
+  const name = prompt("Collection name? Example: Fabric Stash, Machine Parts, Thread");
+  if (!name) return;
+
+  if (appData.collections[name]) {
+    alert("That collection already exists.");
+    return;
+  }
+
+  appData.collections[name] = [];
+  appData.currentCollection = name;
+  saveData();
+  renderAll();
+}
+
+function deleteCollection() {
+  const names = Object.keys(appData.collections);
+
+  if (names.length === 1) {
+    alert("You need at least one collection.");
+    return;
+  }
+
+  if (!confirm(`Delete collection "${appData.currentCollection}"?`)) return;
+
+  delete appData.collections[appData.currentCollection];
+  appData.currentCollection = Object.keys(appData.collections)[0];
+
+  saveData();
+  renderAll();
+}
+
+function toggleDarkMode() {
+  appData.darkMode = !appData.darkMode;
+  saveData();
+  applyDarkMode();
+}
+
+function applyDarkMode() {
+  document.body.classList.toggle("dark", appData.darkMode);
+  darkModeBtn.textContent = appData.darkMode ? "☀️ Light Mode" : "🌙 Dark Mode";
+}
+
+function renderAll() {
+  renderCollections();
+  renderSupplies();
+  renderShoppingList();
+  renderDashboard();
+}
+
+collectionSelect.addEventListener("change", () => {
+  appData.currentCollection = collectionSelect.value;
+  saveData();
+  renderAll();
+});
+
+addCollectionBtn.addEventListener("click", addCollection);
+deleteCollectionBtn.addEventListener("click", deleteCollection);
+
 searchInput.addEventListener("input", renderSupplies);
 categoryFilter.addEventListener("change", renderSupplies);
 stockFilter.addEventListener("change", renderSupplies);
 sortBy.addEventListener("change", renderSupplies);
 
-exportCsvBtn.addEventListener("click", exportCSV);
-exportJsonBtn.addEventListener("click", exportJSON);
-cancelEditBtn.addEventListener("click", resetForm);
+document.getElementById("exportCsvBtn").addEventListener("click", exportCSV);
+document.getElementById("exportJsonBtn").addEventListener("click", exportJSON);
+document.getElementById("restoreJsonInput").addEventListener("change", restoreJSON);
+document.getElementById("printLabelsBtn").addEventListener("click", printLabels);
 
-scrollToFormBtn.addEventListener("click", () => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+document.getElementById("addShoppingBtn").addEventListener("click", () => {
+  const input = document.getElementById("manualShoppingItem");
+  const value = input.value.trim();
+
+  if (value) {
+    addItemToShopping(value);
+    input.value = "";
+  }
 });
 
-renderSupplies();
+document.getElementById("addLowStockBtn").addEventListener("click", addLowStockItems);
+
+cancelEditBtn.addEventListener("click", resetForm);
+darkModeBtn.addEventListener("click", toggleDarkMode);
+
+scrollToFormBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+applyDarkMode();
+renderAll();
