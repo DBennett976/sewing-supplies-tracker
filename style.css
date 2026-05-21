@@ -1,0 +1,137 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f1ea;
+  color: #222;
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+h1 {
+  margin-bottom: 8px;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+form {
+  display: grid;
+  gap: 12px;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+button {
+  background: #222;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.inventoryHeader {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.supplyItem {
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #fffaf5;
+}
+
+.supplyTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.supplyTop h3 {
+  margin: 0;
+}
+
+.badge {
+  display: inline-block;
+  background: #eee;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.low {
+  background: #ffe0e0;
+  color: #900;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.actions button {
+  padding: 9px;
+  font-size: 14px;
+}
+
+.empty {
+  text-align: center;
+  color: #777;
+  padding: 20px;
+}
+
+@media (min-width: 700px) {
+  form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  textarea,
+  button {
+    grid-column: span 2;
+  }
+
+  .inventoryHeader {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+}
